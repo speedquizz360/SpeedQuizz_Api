@@ -1,0 +1,24 @@
+# Directories
+node_modules/
+dist/
+coverage/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+*.sublime-*
+*.swp
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+
+# Images & Other uploads
+public/uploads/
