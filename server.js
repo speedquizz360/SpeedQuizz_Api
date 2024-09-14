@@ -106,4 +106,4 @@ function initial() {
     }
   });
 }
-console.log("Hii demo")
+console.log("Hii SpeedQuizz")
