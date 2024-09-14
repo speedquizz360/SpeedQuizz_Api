@@ -67,6 +67,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to speedquizz application." });
 });
 
+app.get('/auto', (req, res) => {
+  res.json({ message: "Welcome to automation" });
+});
+
 // routes
 require("./routes/auth.routes")(app);
 require("./routes/user.routes")(app);
