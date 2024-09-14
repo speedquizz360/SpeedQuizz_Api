@@ -66,6 +66,11 @@ io.on("connection", (socket) => {
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to speedquizz application." });
 });
+//modified by ks
+app.get("/test", (req, res) => {
+  res.json({ message: "Latest code is pushed and build successfully." });
+});
+//
 
 // routes
 require("./routes/auth.routes")(app);
