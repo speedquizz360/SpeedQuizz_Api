@@ -131,7 +131,13 @@ module.exports = function (app) {
     [authJwt.verifyToken],
     quizController.getQuizLeaderBoard
   );
-
+  // modified by KS(14-09-2024) : Leaderboard Api
+  app.post(
+    "/leaderboard",
+    [authJwt.verifyToken],
+    quizController.getLeaderBoardData
+  )
+  //
   app.get(
     "/quiz-winner-list",
     [authJwt.verifyToken, authJwt.isAdmin],

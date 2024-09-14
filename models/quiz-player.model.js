@@ -15,6 +15,7 @@ const QuizPlayer = mongoose.model(
         required: true,
       },
       score: { type: String, required: true },
+      quizGamePoint: { type: String, required: false },
       time: { type: String },
       isSubmited: { type: Boolean, required: false },
       isWinner: { type: Boolean, required: true },
