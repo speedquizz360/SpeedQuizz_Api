@@ -106,3 +106,4 @@ function initial() {
     }
   });
 }
+console.log("Hii")
