@@ -67,7 +67,7 @@ app.get("/", (req, res) => {
   res.json({ message: "Welcome to speedquizz application." });
 });
 
-app.get("/PK", (req, res) => {
+app.get("/ok", (req, res) => {
   res.json({ message: "OK" });
 });
 
