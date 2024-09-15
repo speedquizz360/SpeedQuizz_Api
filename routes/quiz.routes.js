@@ -80,6 +80,12 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     quizTempaleController.getQuizTemplateById
   );
+  //modified : 24-08-2024
+  app.post(
+    "/leaderboard",
+    [authJwt.verifyToken],
+    quizController.getLeaderBoardData
+  )
   app.post(
     "/quiz-template",
     [authJwt.verifyToken, authJwt.isAdmin],

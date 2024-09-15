@@ -1204,6 +1204,131 @@ const getQuizLeaderBoard = async (req, res) => {
   }
 };
 
+function convertTimeStringToMilliseconds(timeStr) {
+  // Split the time string by ":"
+  const [minutesStr, secondsStr] = timeStr.split(':');
+
+  // Parse strings into integers
+  const minutes = parseInt(minutesStr, 10);
+  const seconds = parseInt(secondsStr, 10);
+
+  // Handle invalid inputs
+  if (isNaN(minutes) || isNaN(seconds)) {
+    throw new Error("Invalid input: Please provide a valid time string in the format MM:SS.");
+  }
+  // Convert minutes to milliseconds
+
+  const minutesInMilliseconds = minutes * 60 * 1000;
+
+  // Convert seconds to milliseconds
+  const secondsInMilliseconds = seconds * 1000;
+
+  // Calculate total milliseconds
+  const totalMilliseconds = minutesInMilliseconds + secondsInMilliseconds;
+
+  return totalMilliseconds;
+}
+function convertMillisecondsToTime(ms) {
+  // Convert milliseconds to seconds
+  const totalSeconds = Math.floor(ms / 1000);
+
+  // Calculate minutes and seconds
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  // Format minutes and seconds as strings
+  const minutesStr = String(minutes).padStart(2, '0'); // Pad with leading zero if needed
+  const secondsStr = String(seconds).padStart(2, '0'); // Pad with leading zero if needed
+  // Return formatted time string
+  return `${minutesStr}:${secondsStr}`;
+}
+
+//modified : 24-08-2024
+const getLeaderBoardData = async (req, res) => {
+  
+  const data = req.body;
+  
+  // const startDate = new Date(data.startDate).toUTCString();
+  // const endDate = new Date(data.endDate).toUTCString();
+  //endDate.setHours(23, 59, 59, 999);
+  // moment(new Date(data.startDate)).utc()
+  // moment(new Date(data.startDate)).utc()
+  try {
+    const updateQuery = {
+      createdAt: {
+        $gte: data.startDate+"T00:00:00.000Z",
+        $lte: data.endDate+"T23:59:59.999Z",
+      }
+    };
+    const quizPlayerData = await QuizPlayer.find(updateQuery);
+    // var gameTimeTemp = convertTimeStringToMilliseconds(quizPlayerData[0].time)
+    const groupedData = {};
+    var gameTimeTemp = 0;
+    // Process player data to group by playerId and track scores and times
+    for (const playerData of quizPlayerData) {
+      const playerId = playerData.playerId;
+      const gameTime = convertTimeStringToMilliseconds(playerData.time);
+
+      if (!groupedData[playerId]) {
+        gameTimeTemp = convertTimeStringToMilliseconds(playerData.time)
+        groupedData[playerId] = {
+          totalScore: 0,
+          gamesPlayed: 0,
+          playerId: playerId,
+        };
+
+      }
+
+      // Update total score and games played count
+      groupedData[playerId].totalScore += parseInt(playerData.quizGamePoint);
+      groupedData[playerId].gamesPlayed += 1;
+      if (gameTimeTemp > gameTime) {
+        gameTimeTemp = gameTime;
+      }
+      groupedData[playerId].lowestGamePlayedTime = convertMillisecondsToTime(gameTimeTemp);
+    }
+
+    // Convert groupedData object to an array and fetch player details
+    const leaderBoardData = await Promise.all(
+      Object.keys(groupedData).map(async (playerId) => {
+        const playerSummary = groupedData[playerId];
+        // Get player details
+        const playerDetails = await User.findById(playerId).exec();
+
+        return {
+          id: playerId,
+          playerName: playerDetails.username || "",
+          playerImage: playerDetails.profileImage || "",
+          totalScore: playerSummary.totalScore,
+          totalGamesPlayed: playerSummary.gamesPlayed,
+          lowestGamePlayedTime: playerSummary.lowestGamePlayedTime,
+          isWinner: false, // Adjust based on your criteria
+        };
+      })
+    );
+
+    if (leaderBoardData.length > 0) {
+      res.status(200).json({
+        message: "Leaderboard fetched successfully!",
+        totalData: leaderBoardData.length,
+        data: leaderBoardData,
+        // data: []
+      });
+    } else {
+      res.status(200).json({
+        message: "Leaderboard fetched successfully!",
+        totalData: 0,
+        data: [],
+        // data: []
+      });
+    }
+
+  } catch (error) {
+    console.log("%c Line:1238 🍷 error", "color:#465975", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 function isEmpty(obj) {
   for (const prop in obj) {
     if (Object.hasOwn(obj, prop)) {
