@@ -688,6 +688,7 @@ const joinQuizGame = async (req, res) => {
                         score: 0,
                         time: "00:00",
                         isWinner: false,
+                        quizGamePoint: 0,
                       });
                       await quiz.save();
                       const quizRoom = `quiz_room_${data.quizGameId}`;
@@ -768,7 +769,7 @@ const submitQuizGame = async (req, res) => {
                 },
               };
               QuizPlayer.updateMany(updateQuery, updateOperation).then(
-                (result) => {}
+                (result) => { }
               );
             }
           }
@@ -984,7 +985,8 @@ async function emitQuizResult(quizID) {
     User.findById(player.playerId).exec(async (err, p) => {
       var Points = p.points;
       var cashPrice = p.cashPrice;
-
+      var quizGamePoint = 0;
+      //
       PlayersData = {
         id: player._id,
         playerId: player.playerId,
@@ -1003,8 +1005,10 @@ async function emitQuizResult(quizID) {
       const allPoints = await Point.find();
       const id = allPoints[0]._id;
       const point = await Point.findById(id);
-
+      const quizGamePointById = await QuizGames.findById({ _id: quizID });
+      //
       if (player.isWinner == true) {
+        quizGamePoint = point.winning_quiz + quizGamePointById.points;
         Points = Points + point.winning_quiz;
         const userRewardData = {
           userId: player.playerId,
@@ -1035,6 +1039,7 @@ async function emitQuizResult(quizID) {
         };
         UserController.userRewards(userRewardData1);
       } else if (quizGame.noOfQuestions == player.score) {
+        quizGamePoint = point.correct_all_answers + quizGamePointById.points;
         Points = Points + point.correct_all_answers;
         const userRewardData2 = {
           userId: player.playerId,
@@ -1049,7 +1054,15 @@ async function emitQuizResult(quizID) {
         };
         UserController.userRewards(userRewardData2);
       }
-
+      // modified : 21/08/2024
+      const updateQuery = { quizGameId: quizID, playerId: p._id };
+      const updateOperation = {
+        $set: {
+          quizGamePoint: quizGamePoint,
+        },
+      };
+      QuizPlayer.updateMany(updateQuery, updateOperation).then((result) => { });
+      //
       p.points = Points;
       p.cashPrice = cashPrice;
       p.save();
@@ -1245,9 +1258,9 @@ function convertMillisecondsToTime(ms) {
 
 //modified : 24-08-2024
 const getLeaderBoardData = async (req, res) => {
-  
+
   const data = req.body;
-  
+
   // const startDate = new Date(data.startDate).toUTCString();
   // const endDate = new Date(data.endDate).toUTCString();
   //endDate.setHours(23, 59, 59, 999);
@@ -1256,8 +1269,8 @@ const getLeaderBoardData = async (req, res) => {
   try {
     const updateQuery = {
       createdAt: {
-        $gte: data.startDate+"T00:00:00.000Z",
-        $lte: data.endDate+"T23:59:59.999Z",
+        $gte: data.startDate + "T00:00:00.000Z",
+        $lte: data.endDate + "T23:59:59.999Z",
       }
     };
     const quizPlayerData = await QuizPlayer.find(updateQuery);
@@ -1593,14 +1606,14 @@ const getQuizWinner = async (req, res) => {
     const skip = (page - 1) * pageSize;
 
     // Get Quiz Game IDs from the players collection
-    QuizPlayer.distinct("quizGameId",{isWinner:true}, (err, playerGameIds) => {
+    QuizPlayer.distinct("quizGameId", { isWinner: true }, (err, playerGameIds) => {
       if (err) {
         console.error("Error fetching player game IDs:", err);
       } else {
         try {
           const pipeline = [
             {
-              $match: { _id: { $in: playerGameIds },winnerId: { $exists: true, $ne: null } },
+              $match: { _id: { $in: playerGameIds }, winnerId: { $exists: true, $ne: null } },
             },
             {
               $lookup: {
@@ -1666,7 +1679,7 @@ const getQuizWinner = async (req, res) => {
                 (quizA, quizB) => quizA.order - quizB.order
               );
 
-              const distinctValues = await QuizPlayer.distinct("quizGameId",{isWinner:true});
+              const distinctValues = await QuizPlayer.distinct("quizGameId", { isWinner: true });
               const totalCount = distinctValues.length;
 
               // Calculate total pages based on pageSize
