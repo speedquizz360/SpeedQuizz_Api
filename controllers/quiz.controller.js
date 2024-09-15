@@ -1953,6 +1953,7 @@ module.exports = {
   joinQuizGame,
   submitQuizGame,
   getQuizLeaderBoard,
+  getLeaderBoardData,
   getPastQuiz,
   deleteExtraQuiz,
   getQuizList,
