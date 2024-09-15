@@ -18,6 +18,8 @@ jobs:
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    - name: Copy static folder before checkout
+      run: cp -r /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/public/ /home/ubuntu/video_images/
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -25,4 +27,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
+    - name: Copy static folder after checkout
+      run: cp -r /home/ubuntu/video_images/public/ /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/
     - run: sudo pm2 restart api
