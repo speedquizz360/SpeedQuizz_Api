@@ -20,6 +20,8 @@ jobs:
     steps:
     - name: Copy static folder before checkout
       run: cp -r /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/public/ /home/ubuntu/video_images/
+    - name: Give Full Folder Permission 
+      run: chmod -R 777 /home/ubuntu/video_images/public && chmod -R 777 /home/ubuntu/video_images/public/uploads
     - uses: actions/checkout@v4
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
@@ -29,4 +31,6 @@ jobs:
     - run: npm ci
     - name: Copy static folder after checkout
       run: cp -r /home/ubuntu/video_images/public/ /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/
+    - name: After Release Give Full Folder Permission 
+      run: chmod -R 777 /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/public && chmod -R 777 /home/ubuntu/SpeedQuizz360/api/actions-runner/_work/SpeedQuizz_Api/SpeedQuizz_Api/public/uploads
     - run: sudo pm2 restart api
